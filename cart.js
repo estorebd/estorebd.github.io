@@ -656,7 +656,7 @@ function injectCallBox() {
   document.body.classList.add("call-modal-open");
   
   mainBtn.innerHTML = `
-    <div class="call-box">
+    <div class="call-box" onclick="event.stopPropagation()">
       <button type="button" class="close-btn" aria-label="Close">×</button>
       <div class="call-top">
         <div class="call-title">Ready to call</div>
