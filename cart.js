@@ -669,6 +669,7 @@ function injectCallBox() {
   const closeBtn = mainBtn.querySelector(".close-btn");
   closeBtn.addEventListener("click", async (e) => {
     e.stopPropagation();
+    await closePiPVideo();
     await restoreCallBox();
   });
   
@@ -684,8 +685,6 @@ function injectCallBox() {
 async function restoreCallBox() {
   const mainBtn = document.getElementById("es-phone-send");
   if (!mainBtn || mainBtn.dataset.mode !== "call") return;
-  
-  await closePiPVideo();
   
   mainBtn.innerHTML = mainBtn.dataset.original || mainBtn.innerHTML;
   mainBtn.classList.remove("call-mode");
