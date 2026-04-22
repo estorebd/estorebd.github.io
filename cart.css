@@ -491,7 +491,64 @@ textarea {
     transform: translate(-50%, 0);
   }
 }
+/* call popup inside */
 
+#es-phone-send {
+  position: relative;
+}
+
+#es-phone-send.call-mode {
+  background: #333;
+}
+
+#es-phone-send .call-box {
+  position: absolute;
+  left: 50%;
+  top: -45px;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #000;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  white-space: nowrap;
+  animation: fadeIn 0.25s ease;
+}
+
+#es-phone-send .call-btn {
+  margin-left: 8px;
+  padding: 4px 10px;
+  background: #28a745;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+#es-phone-send.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+#es-phone-send.loading::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 8px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .remove-btn {
   color: #ff000077;
