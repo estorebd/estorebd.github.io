@@ -566,21 +566,14 @@ $('#es-mail-send').addEventListener('click', (ev) => {
 });
 
 async function startBoxPiP(boxId, fps = 2) {
-
+  const mainBtn = document.getElementById("es-phone-send");
+  
+  mainBtn.classList.add("loading");
+  
+  await new Promise(resolve => setTimeout(resolve, 0));
+  
   const box = document.getElementById(boxId);
-
-  function boxToImage() {
-    const xml = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${box.offsetWidth}" height="${box.offsetHeight}">
-        <foreignObject width="100%" height="100%">
-          ${new XMLSerializer().serializeToString(box)}
-        </foreignObject>
-      </svg>`;
-    const img = new Image();
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(xml)));
-    return img;
-  }
-
+  
   let video = document.getElementById("pipVideo");
   if (!video) {
     video = document.createElement("video");
@@ -590,38 +583,71 @@ async function startBoxPiP(boxId, fps = 2) {
     video.style.display = "none";
     document.body.appendChild(video);
   }
-
-  const off = document.createElement("canvas");
-  const ctx = off.getContext("2d");
-
-  const firstImg = boxToImage();
-  await new Promise(res => firstImg.onload = res);
-
-  off.width = firstImg.width;
-  off.height = firstImg.height;
-  ctx.drawImage(firstImg, 0, 0);
-
-  const stream = off.captureStream(fps);
+  
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  
+  const firstCanvas = await html2canvas(box);
+  
+  canvas.width = firstCanvas.width;
+  canvas.height = firstCanvas.height;
+  ctx.drawImage(firstCanvas, 0, 0);
+  
+  const stream = canvas.captureStream(fps);
   video.srcObject = stream;
+  
   await video.play();
-  video.requestPictureInPicture().catch(() => {});
-  window.location.href = "tel:+8801872605055";
-
-  // Continue updating PiP
-  const loop = setInterval(() => {
-    const img = boxToImage();
-    img.onload = () => {
-      ctx.clearRect(0, 0, off.width, off.height);
-      ctx.drawImage(img, 0, 0);
-    };
+  
+  try {
+    await video.requestPictureInPicture();
+  } catch (e) {
+    console.log("PiP failed:", e);
+  }
+  
+  mainBtn.classList.remove("loading");
+  
+  injectCallBox();
+  
+  const loop = setInterval(async () => {
+    const newCanvas = await html2canvas(box);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(newCanvas, 0, 0);
   }, 1500);
-
+  
   video.addEventListener("leavepictureinpicture", () => {
     clearInterval(loop);
     stream.getTracks().forEach(t => t.stop());
+    restoreCallBox();
   });
-
 }
+
+function injectCallBox() {
+  const mainBtn = document.getElementById("es-phone-send");
+  
+  if (!mainBtn || mainBtn.dataset.mode === "call") return;
+  
+  mainBtn.dataset.original = mainBtn.innerHTML;
+  
+  mainBtn.dataset.mode = "call";
+  mainBtn.classList.add("call-mode");
+  
+  mainBtn.innerHTML = `
+    Ready to Call?
+    <div class="call-box">
+        Tap to Call →
+        <a href="tel:+8801872605055" class="call-btn">📞 Call Now</a>
+    </div>
+  `;
+  
+  const callBtn = mainBtn.querySelector(".call-btn");
+  
+  callBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    
+    restoreCallBox();
+  });
+}
+
 
 document.body.addEventListener('click', (ev) => {
   const inc = ev.target.closest('.qty-inc');
