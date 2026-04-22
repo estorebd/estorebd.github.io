@@ -648,6 +648,15 @@ function injectCallBox() {
   });
 }
 
+function restoreCallBox() {
+  const mainBtn = document.getElementById("es-phone-send");
+  if (!mainBtn || mainBtn.dataset.mode !== "call") return;
+  
+  mainBtn.innerHTML = mainBtn.dataset.original;
+  mainBtn.classList.remove("call-mode");
+  delete mainBtn.dataset.mode;
+  delete mainBtn.dataset.original;
+}
 
 document.body.addEventListener('click', (ev) => {
   const inc = ev.target.closest('.qty-inc');
