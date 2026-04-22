@@ -601,7 +601,7 @@ async function startBoxPiP(boxId, fps = 2) {
   try {
     await video.requestPictureInPicture();
   } catch (e) {
-    console.log("PiP failed:", e);
+    //console.log("PiP failed:", e);
   }
   
   mainBtn.classList.remove("loading");
@@ -621,41 +621,78 @@ async function startBoxPiP(boxId, fps = 2) {
   });
 }
 
+async function closePiPVideo() {
+  const video = document.getElementById("pipVideo");
+  if (!video) return;
+  
+  try {
+    if (document.pictureInPictureElement === video) {
+      await document.exitPictureInPicture();
+    }
+  } catch (e) {
+    //console.log("exit PiP failed:", e);
+  }
+  
+  try {
+    video.pause();
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+    }
+    video.removeAttribute("src");
+    video.load();
+  } catch (e) {
+    //console.log("video cleanup failed:", e);
+  }
+}
+
 function injectCallBox() {
   const mainBtn = document.getElementById("es-phone-send");
-  
   if (!mainBtn || mainBtn.dataset.mode === "call") return;
   
   mainBtn.dataset.original = mainBtn.innerHTML;
-  
   mainBtn.dataset.mode = "call";
   mainBtn.classList.add("call-mode");
+  document.body.classList.add("call-modal-open");
   
   mainBtn.innerHTML = `
-    Ready to Call?
     <div class="call-box">
-        Tap to Call →
-        <a href="tel:+8801872605055" class="call-btn">📞 Call Now</a>
+      <button type="button" class="close-btn" aria-label="Close">×</button>
+      <div class="call-top">
+        <div class="call-title">Ready to call</div>
+        <div class="call-subtitle">Tap the button to start the call</div>
+      </div>
+      <a href="tel:${CFG.WHATSAPP}" class="call-btn"> Call Now</a>
     </div>
   `;
   
-  const callBtn = mainBtn.querySelector(".call-btn");
+  const closeBtn = mainBtn.querySelector(".close-btn");
+  closeBtn.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    await restoreCallBox();
+  });
   
+  const callBtn = mainBtn.querySelector(".call-btn");
   callBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    
     restoreCallBox();
+    if (!isSingleBuy) clearCart();
+    else !isSingleBuy;
   });
 }
 
-function restoreCallBox() {
+async function restoreCallBox() {
   const mainBtn = document.getElementById("es-phone-send");
   if (!mainBtn || mainBtn.dataset.mode !== "call") return;
   
-  mainBtn.innerHTML = mainBtn.dataset.original;
+  await closePiPVideo();
+  
+  mainBtn.innerHTML = mainBtn.dataset.original || mainBtn.innerHTML;
   mainBtn.classList.remove("call-mode");
   delete mainBtn.dataset.mode;
   delete mainBtn.dataset.original;
+  
+  document.body.classList.remove("call-modal-open");
 }
 
 document.body.addEventListener('click', (ev) => {
@@ -856,29 +893,7 @@ renderCart();
     popup.remove();
     popup = null;
   }
-/*
-  function openPopupNear(target) {
-    removePopup();
-    popup = createPopup();
-    document.body.appendChild(popup);
-    
-    const rect = target.getBoundingClientRect();
-    const pw = popup.offsetWidth;
-    const ph = popup.offsetHeight;
-    const margin = 10;
-    
-    let top = rect.bottom + margin;
-    let left = rect.right - pw;
-    
-    if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-    if (left < 8) left = 8;
-    if (top + ph > window.innerHeight - 8) top = rect.top - ph - margin;
-    if (top < 8) top = 8;
-    
-    popup.style.top = top + 'px';
-    popup.style.left = left + 'px';
-  }
-  */
+
   function openPopupNear(target) {
   removePopup();
   popup = createPopup();
