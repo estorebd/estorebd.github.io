@@ -714,36 +714,40 @@ document.body.addEventListener('click', (ev) => {
 });
 
 function attachToExistingButtons() {
-  document.body.addEventListener('click', (ev) => {
-    const addBtn = ev.target.closest('.add-cart');
-    if (addBtn) {
-      const cart = addBtn.closest('.cart');
-      const id = cart?.dataset.id;
-      if (!id) return showToast('ID NOT FOUND');
-      
-      const prod = PRODUCTS[id] || {
-        ID: id,
-        name: cart.querySelector('.title')?.textContent?.trim() || ('Product ' + id),
-        price: Number((cart.querySelector('.price')?.textContent || '').replace(/[^\d.]/g, '')) || 0,
-        available: null
-      };
-      addToCartFromProduct(prod);
-      return;
-    }
-    
-    const buyBtn = ev.target.closest('.buy-now');
-    if (buyBtn) {
-      const cart = buyBtn.closest('.cart');
-      const id = cart?.dataset.id;
-      if (!id) return showToast('ID NOT FOUND');
-      
-      window.SINGLE_BUY = id;
-      populateCheckout(id);
-      $('#es-checkout-overlay').style.display = 'flex';
-      $('#es-checkout-overlay').classList.add('show');
-      isSingleBuy = true;
-    }
+  $$('.add-cart').forEach(btn => {
+  if (btn.dataset.esAttached) return;
+  btn.dataset.esAttached = '1';
+  btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    const cart = btn.closest('.cart');
+    const id = cart.dataset.id;
+    if (!id) { showToast('ID NOT FOUND'); return; }
+    const prod = PRODUCTS[id] || {
+      ID: id,
+      name: cart.querySelector('.title')?.textContent?.trim() || ('Product ' + id),
+      price: Number((cart.querySelector('.price')?.textContent || '').replace(/[^\d.]/g, '')) || 0,
+      available: null
+    };
+    addToCartFromProduct(prod);
   });
+});
+$$('.buy-now').forEach(btn => {
+  if (btn.dataset.esAttached) return;
+  btn.dataset.esAttached = '1';
+  btn.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    const cart = btn.closest('.cart');
+    const id = cart.dataset.id;
+    if (!id) { showToast('ID NOT FOUND'); return; } window.SINGLE_BUY = id;
+    populateCheckout(id);
+    $('#es-checkout-overlay').style.display = 'flex';
+    $('#es-checkout-overlay').classList.add('show');
+    runAutoShowTooltip(button, showTooltip, hideTooltip);
+    isSingleBuy = true;
+  });
+});
+    
+
   $$('.cart').forEach(btn => {
     
     let pressTimer = null;
