@@ -608,7 +608,7 @@ body.call-modal-open {
 }
 
 .close {
-  background: #0000002D;
+  background: #fff;
 }
 
 .showB {
@@ -887,4 +887,29 @@ label.zone-item:hover {
   100% {
     margin-bottom: 0px;
   }
+}
+
+
+  #es-back-to-cart,
+#es-save-address {
+  padding: 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  border: 1px solid #ddd
+}
+
+#es-save-address {
+  order: 2;
+}
+
+#es-back-to-cart {
+  order: 1;
+}
+
+.summary>div:nth-of-type(2) {
+  background: #F1F1F1;
+  border-radius: 3px;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
 }
