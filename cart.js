@@ -61,39 +61,49 @@ function cartFtouch(p) {
 function cartMake(p, product) {
   const id = String(product.ID || product.id);
   PRODUCTS[id] = product;
-  p.innerHTML += `
-      <article class="cart" data-available="${product.available}" data-id="${product.ID}" data-sold="${product.sold}" aria-labelledby="p1-name">
-        <div class="img-frame">
-          <img src="/IMG/${product.ID}.webp" loading="lazy" alt="${product.name}">
+  
+  const imgId = product.ID || product.id;
+  
+  const article = document.createElement('article');
+  article.className = 'cart';
+  article.dataset.available = product.available;
+  article.dataset.id = id;
+  article.dataset.sold = product.sold;
+  
+  article.innerHTML = `
+    <div class="img-frame">
+      <img src="/IMG/${product.ID}.webp" loading="lazy" alt="${product.name}">
+    </div>
+    <div class="cart-body">
+      <div class="meta">
+        <div>
+          <div class="title" id="p1-name">${product.name}</div>
+          <div class="muted" style="margin-top:6px;">${product.description}</div>
         </div>
-        <div class="cart-body">
-          <div class="meta">
-            <div>
-              <div class="title" id="p1-name">${product.name}</div>
-              <div class="muted" style="margin-top:6px;">${product.description}</div>
-            </div>
-            <div class="price">${money(product.price)}</div>
-          </div>
-          <div class="stats" aria-hidden="false">
-            <div>Sold: <strong class="info-sold"></strong></div>
-            <div>Available: <strong class="info-available"></strong></div>
-          </div>
-          <div class="progress-wrap">
-            <div class="progress-bar" aria-hidden="true"><span></span></div>
-            <div class="progress-note">— % of stock sold</div>
-          </div>
-          <div class="actions">
-            <button class="btn primary add-cart">Add to Cart</button>
-            <button class="btn ghost buy-now">Buy Now</button>
-          </div>
-          <div class="cart-footer">
-            <div>ID: ${product.ID}</div>
-            <div>${product.notice}</div>
-          </div>
-        </div>
-      </article>
-     `;
+        <div class="price">${money(product.price)}</div>
+      </div>
+      <div class="stats" aria-hidden="false">
+        <div>Sold: <strong class="info-sold"></strong></div>
+        <div>Available: <strong class="info-available"></strong></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" aria-hidden="true"><span></span></div>
+        <div class="progress-note">— % of stock sold</div>
+      </div>
+      <div class="actions">
+        <button class="btn primary add-cart">Add to Cart</button>
+        <button class="btn ghost buy-now">Buy Now</button>
+      </div>
+      <div class="cart-footer">
+        <div>ID: ${product.ID}</div>
+        <div>${product.notice}</div>
+      </div>
+    </div>
+  `;
+  p.appendChild(article);
 }
+
+
 
 function safeload(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
 
@@ -704,91 +714,94 @@ document.body.addEventListener('click', (ev) => {
 });
 
 function attachToExistingButtons() {
-  $$('.add-cart').forEach(btn => {
-    if (btn.dataset.esAttached) return;
-    btn.dataset.esAttached = '1';
-    btn.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      const cart = btn.closest('.cart');
-      const id = cart.dataset.id;
-      if (!id) { showToast('ID NOT FOUND'); return; }
-      const prod = PRODUCTS[id] || { ID: id, name: cart.querySelector('.title')?.textContent?.trim() || ('Product ' + id), price: Number((cart.querySelector('.price')?.textContent || '').replace(/[^\d.]/g, '')) || 0, available: null };
+  document.body.addEventListener('click', (ev) => {
+    const addBtn = ev.target.closest('.add-cart');
+    if (addBtn) {
+      const cart = addBtn.closest('.cart');
+      const id = cart?.dataset.id;
+      if (!id) return showToast('ID NOT FOUND');
+      
+      const prod = PRODUCTS[id] || {
+        ID: id,
+        name: cart.querySelector('.title')?.textContent?.trim() || ('Product ' + id),
+        price: Number((cart.querySelector('.price')?.textContent || '').replace(/[^\d.]/g, '')) || 0,
+        available: null
+      };
       addToCartFromProduct(prod);
-    });
-  });
-  $$('.buy-now').forEach(btn => {
-    if (btn.dataset.esAttached) return;
-    btn.dataset.esAttached = '1';
-    btn.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      const cart = btn.closest('.cart');
-      const id = cart.dataset.id;
-      if (!id) { showToast('ID NOT FOUND'); return; }
+      return;
+    }
+    
+    const buyBtn = ev.target.closest('.buy-now');
+    if (buyBtn) {
+      const cart = buyBtn.closest('.cart');
+      const id = cart?.dataset.id;
+      if (!id) return showToast('ID NOT FOUND');
+      
       window.SINGLE_BUY = id;
       populateCheckout(id);
       $('#es-checkout-overlay').style.display = 'flex';
       $('#es-checkout-overlay').classList.add('show');
-      runAutoShowTooltip(button, showTooltip, hideTooltip);
       isSingleBuy = true;
-    });
+    }
   });
   $$('.cart').forEach(btn => {
-
-  let pressTimer = null;
-  let startX = 0;
-  let startY = 0;
-  let pointerId = null;
-
-  const clearPress = () => {
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      pressTimer = null;
-    }
-    pointerId = null;
-  };
-
-  // Right click (desktop)
-  btn.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    handleLongPress(btn.dataset.id);
-  });
-
-  // Pointer down (unified)
-  btn.addEventListener('pointerdown', (e) => {
-
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-
-    clearPress();
-
-    pointerId = e.pointerId;
-    startX = e.clientX;
-    startY = e.clientY;
-
-    pressTimer = setTimeout(() => {
+    
+    let pressTimer = null;
+    let startX = 0;
+    let startY = 0;
+    let pointerId = null;
+    
+    const clearPress = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+      pointerId = null;
+    };
+    
+    // Right click (desktop)
+    btn.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
       handleLongPress(btn.dataset.id);
+    });
+    
+    // Pointer down (unified)
+    btn.addEventListener('pointerdown', (e) => {
+      
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      
       clearPress();
-    }, 600);
+      
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      startY = e.clientY;
+      
+      pressTimer = setTimeout(() => {
+        handleLongPress(btn.dataset.id);
+        clearPress();
+      }, 600);
+    });
+    
+    // movement detect (cancel long press)
+    btn.addEventListener('pointermove', (e) => {
+      if (!pressTimer || e.pointerId !== pointerId) return;
+      
+      const dx = Math.abs(e.clientX - startX);
+      const dy = Math.abs(e.clientY - startY);
+      
+      if (dx > 10 || dy > 10) {
+        clearPress();
+      }
+    });
+    
+    // cleanup events
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt => {
+      btn.addEventListener(evt, clearPress);
+    });
+    
   });
-
-  // movement detect (cancel long press)
-  btn.addEventListener('pointermove', (e) => {
-    if (!pressTimer || e.pointerId !== pointerId) return;
-
-    const dx = Math.abs(e.clientX - startX);
-    const dy = Math.abs(e.clientY - startY);
-
-    if (dx > 10 || dy > 10) {
-      clearPress();
-    }
-  });
-
-  // cleanup events
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt => {
-    btn.addEventListener(evt, clearPress);
-  });
-
-});
 }
+
 document.addEventListener("contextmenu", e => e.preventDefault());
 document.addEventListener("dragstart", e => e.preventDefault());
 var globalList;
