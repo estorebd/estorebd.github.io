@@ -218,7 +218,7 @@ nav .hide svg {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 500;
+  z-index: 999999;
   display: none;
   transition: opacity 0.3s ease;
 }
