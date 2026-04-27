@@ -557,6 +557,15 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
+window.addEventListener('keydown', (e) => {
+  // যদি Backspace চাপা হয় এবং user input field-এ না থাকে
+  if (e.key === 'Backspace' && 
+      !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+    
+    e.preventDefault(); // default browser back prevent
+    history.back();     // তোমার existing logic ট্রিগার করবে
+  }
+});
 
 
 $('#es-save-address').addEventListener('click', saveAddressAndContact);
