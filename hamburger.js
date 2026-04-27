@@ -2,32 +2,68 @@ const hamburger = document.getElementById('hamburger');
 const navMenu = document.getElementById('nav-menu');
 const savedValue = sessionStorage.getItem('searchValueN');
 
-// overlay ডাইনামিকভাবে তৈরি করা হচ্ছে
 const overlay = document.createElement('div');
 overlay.id = 'nav-overlay';
-document.body.appendChild(overlay); // body-র শেষে যুক্ত হচ্ছে
+document.body.appendChild(overlay);
 
-function toggleMenu() {
-  hamburger.classList.toggle('active');
-  navMenu.classList.toggle('active');
-  overlay.classList.toggle('active');
+function openMenu() {
+  if (navMenu.classList.contains('active')) return;
+  
+  hamburger.classList.add('active');
+  navMenu.classList.add('active');
+  overlay.classList.add('active');
+  
+  history.pushState({ popup: 'nav-menu' }, '', location.href);
 }
 
-hamburger.addEventListener('click', toggleMenu);
+function closeMenu(fromHistory = false) {
+  hamburger.classList.remove('active');
+  navMenu.classList.remove('active');
+  overlay.classList.remove('active');
+  
+  if (!fromHistory && history.state?.popup === 'nav-menu') {
+    history.back();
+  }
+}
+
+hamburger.addEventListener('click', () => {
+  if (navMenu.classList.contains('active')) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
+});
 
 hamburger.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
-    toggleMenu();
+    if (navMenu.classList.contains('active')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   }
 });
 
-// overlay তে ক্লিক করলে সব বন্ধ হবে
 overlay.addEventListener('click', () => {
-  hamburger.classList.remove('active');
-  navMenu.classList.remove('active');
-  overlay.classList.remove('active');
+  closeMenu()
 });
+
+window.addEventListener('popstate', (e) => {
+  const p = e.state?.popup || null;
+  
+  if (p === 'nav-menu') {
+    hamburger.classList.add('active');
+    navMenu.classList.add('active');
+    overlay.classList.add('active');
+  } else {
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+    overlay.classList.remove('active');
+  }
+});
+
+
 const sBar = document.querySelector('.s_bar input');
 const sBtn = document.querySelector('.s_bar button');
 
@@ -41,30 +77,14 @@ function runSearch() {
   sBar.value = '';
   window.location.href = '/SEARCH';
 }
-/*
-function getSearchId() {
-  const url = location.href;
-  
-  if (url.includes("/SEARCH")) {
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    
-    // শুধু ৪ সংখ্যার হলে valid  
-    if (id && /^\d{4}$/.test(id)) {
-      return id;
-    }
-    
-  }
-  return null;
-}
-*/
+
 function getSearchId() {
   const url = new URL(window.location.href);
   const path = url.pathname.replace(/\/$/, '');
-
+  
   if (path.endsWith('/SEARCH')) {
     let id = url.searchParams.get('id');
-
+    
     if (id && /^\d{4}$/.test(id)) {
       id = "#" + id;
       return id;
@@ -116,9 +136,7 @@ document.querySelectorAll('.link').forEach((e, n) => {
 
 const val = getSearchId();
 
-//window.onload = () => {
-  if (val && !savedValue) {
-    sBar.value = '';
-    sessionStorage.setItem("searchValueA", JSON.stringify(val));
-  }
-//};
+if (val && !savedValue) {
+  sBar.value = '';
+  sessionStorage.setItem("searchValueA", JSON.stringify(val));
+}
