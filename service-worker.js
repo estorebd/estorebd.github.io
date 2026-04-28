@@ -2,6 +2,12 @@ const CACHE_NAME = "estore-cache-v2";
 const urlsToCache = [
   "/",
   "/index.html",
+  "/cart.json",
+  "cart.js",
+  "cart.css",
+  "hamburger.js",
+  "header.css",
+  "slide.css",
   "/IMG/favicon-192x192.png",
   "/IMG/favicon-512x512.png"
 ];
