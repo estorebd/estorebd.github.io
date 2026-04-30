@@ -779,6 +779,7 @@ $$('.buy-now').forEach(btn => {
     $('#es-checkout-overlay').style.display = 'flex';
     $('#es-checkout-overlay').classList.add('show');
     runAutoShowTooltip(button, showTooltip, hideTooltip);
+    history.pushState({ popup: 'checkout' }, '', location.href);
     isSingleBuy = true;
   });
 });
