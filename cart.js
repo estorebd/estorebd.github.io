@@ -611,13 +611,6 @@ $('#es-mail-send').addEventListener('click', (ev) => {
   openMail(window.SINGLE_BUY || null);
 });
 
-function canStartPiP(video) {
-  return !!(
-    video &&
-    typeof video.requestPictureInPicture === "function" &&
-    document.pictureInPictureEnabled
-  );
-}
 
 async function startBoxPiP(boxId, fps = 2) {
   const mainBtn = document.getElementById("es-phone-send");
@@ -637,13 +630,6 @@ async function startBoxPiP(boxId, fps = 2) {
     document.body.appendChild(video);
   }
   
-  // শুধু এখানেই check
-  if (!canStartPiP(video)) {
-    mainBtn.classList.remove("loading");
-    console.log("PiP available না");
-    return;
-  }
-  
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   
@@ -661,9 +647,7 @@ async function startBoxPiP(boxId, fps = 2) {
   try {
     await video.requestPictureInPicture();
   } catch (e) {
-    // console.log("PiP failed:", e);
-    mainBtn.classList.remove("loading");
-    return;
+    alart("PiP failed:", e);
   }
   
   mainBtn.classList.remove("loading");
@@ -680,7 +664,7 @@ async function startBoxPiP(boxId, fps = 2) {
     clearInterval(loop);
     stream.getTracks().forEach(t => t.stop());
     restoreCallBox();
-  }, { once: true });
+  });
 }
 
 async function closePiPVideo() {
