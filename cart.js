@@ -709,7 +709,7 @@ function injectCallBox() {
         <div class="call-title">Ready to call</div>
         <div class="call-subtitle">Tap the button to start the call</div>
       </div>
-      <a href="tel:${CFG.WHATSAPP}" class="call-btn"> Call Now</a>
+      <a href="tel:+8801872605055" class="call-btn"> Call Now</a>
     </div>
   `;
   
