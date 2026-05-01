@@ -614,6 +614,7 @@ $('#es-mail-send').addEventListener('click', (ev) => {
 
 async function startBoxPiP(boxId, fps = 2) {
   const mainBtn = document.getElementById("es-phone-send");
+  
   mainBtn.classList.add("loading");
   
   await new Promise(resolve => setTimeout(resolve, 0));
@@ -647,7 +648,7 @@ async function startBoxPiP(boxId, fps = 2) {
   try {
     await video.requestPictureInPicture();
   } catch (e) {
-    alart("PiP failed:", e);
+    showToast("PiP failed:", e);
   }
   
   mainBtn.classList.remove("loading");
@@ -676,7 +677,7 @@ async function closePiPVideo() {
       await document.exitPictureInPicture();
     }
   } catch (e) {
-    //console.log("exit PiP failed:", e);
+    showToast("exit PiP failed:", e);
   }
   
   try {
@@ -688,7 +689,7 @@ async function closePiPVideo() {
     video.removeAttribute("src");
     video.load();
   } catch (e) {
-    //console.log("video cleanup failed:", e);
+    showToast("video cleanup failed:", e);
   }
 }
 
