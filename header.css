@@ -145,6 +145,7 @@ nav .hide svg {
     gap: 15px;
     z-index: 998;
     border-top-left-radius: 10px;
+    overflow: hidden;
   }
   
   nav.active {
