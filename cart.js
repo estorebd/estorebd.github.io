@@ -174,7 +174,7 @@ function updateFloating() {
   if ($('#es-toast')) return;
   const t = document.createElement('div');
   t.id = 'es-toast';
-  t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:rgba(0,0,0,.8);color:#fff;padding:8px 12px;border-radius:8px;z-index:1600;opacity:0;transition:all .18s';
+  t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:rgba(0,0,0,.8);color:#fff;padding:8px 12px;border-radius:8px;z-index:1600;opacity:0;transition:all .18s;pointer-events:none';
   document.body.appendChild(t);
 })();
 
