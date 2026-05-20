@@ -1141,3 +1141,29 @@ function showCartBurst(x, y, cartBtn) {
   cartBtn.classList.add('cart-bump');
   cartBtn.addEventListener('animationend', () => cartBtn.classList.remove('cart-bump'), { once: true });
 }
+
+function injectKeyframes() {
+  if (document.getElementById('es-anim-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'es-anim-styles';
+  style.textContent = `
+  @keyframes plusOnePop {
+    0%   { transform: translateY(0) scale(0.5); opacity: 1; }
+    60%  { transform: translateY(-28px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+  }
+  @keyframes cartBump {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.22); }
+    60%  { transform: scale(0.92); }
+    80%  { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .floating-cart.cart-bump {
+    animation: cartBump 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+`;
+  document.head.appendChild(style);
+}
+
+injectKeyframes(); 
