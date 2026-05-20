@@ -1059,7 +1059,7 @@ function flyToCart(triggerEl) {
   
   const imgRect = img.getBoundingClientRect();
   const cartRect = cartBtn.getBoundingClientRect();
-
+  
   const toX = cartRect.left + cartRect.width / 2;
   const toY = cartRect.top + cartRect.height / 2;
   
@@ -1091,11 +1091,12 @@ function flyToCart(triggerEl) {
     const t = Math.min(elapsed / duration, 1);
     
     const ease = t * t * t;
-
+    
     const x = fromX + (toX - fromX) * ease;
     const y = fromY + (toY - fromY) * ease;
-  
+    
     const scale = 1 - ease * 0.9;
+    
     const opacity = t < 0.7 ? 1 : 1 - ((t - 0.7) / 0.3);
     
     clone.style.left = `${x - (imgRect.width  / 2) * scale}px`;
