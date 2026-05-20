@@ -765,6 +765,12 @@ function attachToExistingButtons() {
       price: Number((cart.querySelector('.price')?.textContent || '').replace(/[^\d.]/g, '')) || 0,
       available: null
     };
+    const existing = loadCart();
+    if (existing[id] && prod.available && existing[id].qty >= prod.available) {
+      showToast('Stock Limit — Cannot Add More');
+      return;
+    }
+    flyToCart(btn);
     addToCartFromProduct(prod);
   });
 });
@@ -1038,4 +1044,99 @@ function runAutoShowTooltip(targetButton, showFn, hideFn, delay = 1000, duration
       hideFn();
     }, duration);
   }, delay);
+}
+
+function flyToCart(triggerEl) {
+  if (triggerEl.disabled || triggerEl.classList.contains('disabled')) return;
+  
+  const card = triggerEl.closest('.cart');
+  if (!card) return;
+  const img = card.querySelector('.img-frame img');
+  if (!img) return;
+  
+  const cartBtn = document.querySelector('.floating-cart');
+  if (!cartBtn) return;
+  
+  const imgRect = img.getBoundingClientRect();
+  const cartRect = cartBtn.getBoundingClientRect();
+
+  const toX = cartRect.left + cartRect.width / 2;
+  const toY = cartRect.top + cartRect.height / 2;
+  
+  const fromX = imgRect.left + imgRect.width / 2;
+  const fromY = imgRect.top + imgRect.height / 2;
+  
+  const clone = document.createElement('img');
+  clone.src = img.src;
+  clone.style.cssText = `
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    border-radius: 10px;
+    object-fit: contain;
+    width: ${imgRect.width}px;
+    height: ${imgRect.height}px;
+    left: ${imgRect.left}px;
+    top: ${imgRect.top}px;
+    transform-origin: center center;
+    transition: none;
+  `;
+  document.body.appendChild(clone);
+  
+  const duration = 650; 
+  const startTime = performance.now();
+  
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    
+    const ease = t * t * t;
+
+    const x = fromX + (toX - fromX) * ease;
+    const y = fromY + (toY - fromY) * ease;
+  
+    const scale = 1 - ease * 0.9;
+    const opacity = t < 0.7 ? 1 : 1 - ((t - 0.7) / 0.3);
+    
+    clone.style.left = `${x - (imgRect.width  / 2) * scale}px`;
+    clone.style.top = `${y - (imgRect.height / 2) * scale}px`;
+    clone.style.width = `${imgRect.width  * scale}px`;
+    clone.style.height = `${imgRect.height * scale}px`;
+    clone.style.opacity = opacity;
+    
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      clone.remove();
+      showCartBurst(toX, toY, cartBtn);
+    }
+  }
+  
+  requestAnimationFrame(animate);
+}
+
+function showCartBurst(x, y, cartBtn) {
+  const badge = document.createElement('span');
+  badge.textContent = '+1';
+  badge.style.cssText = `
+    position: fixed;
+    z-index: 9999;
+    left: ${x - 18}px;
+    top: ${y - 10}px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+    background: ${['#FF3B3B','#FF9500','#34C759','#007AFF','#AF52DE','#FF2D55','#00C7BE'][Math.floor(Math.random()*7)]};
+    padding: 4px 10px;
+    border-radius: 999px;
+    pointer-events: none;
+    animation: plusOnePop 0.75s ease forwards;
+  `;
+  document.body.appendChild(badge);
+  badge.addEventListener('animationend', () => badge.remove());
+  
+  cartBtn.classList.remove('cart-bump');
+  void cartBtn.offsetWidth;
+  cartBtn.classList.add('cart-bump');
+  cartBtn.addEventListener('animationend', () => cartBtn.classList.remove('cart-bump'), { once: true });
 }
