@@ -169,7 +169,7 @@ function updateFloating() {
   if (cnt) cnt.textContent = count;
   if (tot) tot.textContent = money(total);
 }
-
+/*
 (function createToast() {
   if ($('#es-toast')) return;
   const t = document.createElement('div');
@@ -187,6 +187,95 @@ function showToast(msg = 'Done') {
   t.style.opacity = '1';
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => t.style.opacity = '0', 1600);
+}
+*/
+
+(function createToast() {
+  if (document.getElementById('es-toast')) return;
+  
+  const style = document.createElement('style');
+  style.textContent = `
+    #es-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 72px;
+      transform: translateX(-50%) translateY(16px);
+      background: #000;
+      color: #fff;
+      font-size: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 400;
+      letter-spacing: .25px;
+      line-height: 1.4;
+      padding: 10px 20px;
+      border-radius: 24px;
+      z-index: 1600;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      transition: opacity .22s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+      transition: opacity .12s ease, transform .22s cubic-bezier(.34,1.56,.64,1);
+      max-width: calc(100vw - 48px);
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    #es-toast.es-show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Desktop */
+    @media (min-width: 768px) {
+      #es-toast {
+        right: auto;
+        left: 32px;
+        bottom: 32px;
+        transform: translateY(12px);
+        border-radius: 12px;
+        font-size: 13px;
+        padding: 12px 20px;
+        min-width: 200px;
+        max-width: 360px;
+        white-space: normal;
+        box-shadow: 0 6px 24px rgba(0,0,0,.2), 0 1px 4px rgba(0,0,0,.12);
+      }
+
+      #es-toast.es-show {
+        transform: translateY(0);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  const t = document.createElement('div');
+  t.id = 'es-toast';
+  document.body.appendChild(t);
+})();
+
+let _toastTimer = null;
+
+function showToast(msg = 'Done') {
+  const t = document.getElementById('es-toast');
+  if (!t) return;
+  
+  t.classList.remove('es-show');
+  clearTimeout(_toastTimer);
+  
+  t.textContent = msg;
+  
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      t.classList.add('es-show');
+    });
+  });
+  
+  _toastTimer = setTimeout(() => {
+    t.style.transition = 'opacity .1s ease, transform .3s ease';
+    t.classList.remove('es-show');
+    setTimeout(() => t.style.transition = '', 350); // reset
+  }, 1800);
 }
 
 const Sections = {
