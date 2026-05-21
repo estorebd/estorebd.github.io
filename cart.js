@@ -200,14 +200,14 @@ function showToast(msg = 'Done') {
       left: 50%;
       bottom: 72px;
       transform: translateX(-50%) translateY(16px);
-      background: #000;
+      background: #000000cf;
       color: #fff;
       font-size: 14px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-weight: 400;
+      font-weight: 500;
       letter-spacing: .25px;
       line-height: 1.4;
-      padding: 10px 20px;
+      padding: 5px 10px;
       border-radius: 24px;
       z-index: 1600;
       opacity: 0;
