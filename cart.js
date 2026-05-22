@@ -601,7 +601,7 @@ $('#es-proceed-checkout').addEventListener('click', () => {
   populateCheckout(null);
   $('#es-checkout-overlay').style.display = 'flex';
   $('#es-checkout-overlay').classList.add('show');
-  runAutoShowTooltip(button, showTooltip, hideTooltip);
+  runAutoShowTooltip(document.getElementById('infoBtn'), window._showTooltip, window._hideTooltip);
   history.pushState({ popup: 'checkout' }, '', location.href);
 });
 $('#es-close-checkout').addEventListener('click', () => {
@@ -873,7 +873,7 @@ $$('.buy-now').forEach(btn => {
     populateCheckout(id);
     $('#es-checkout-overlay').style.display = 'flex';
     $('#es-checkout-overlay').classList.add('show');
-    runAutoShowTooltip(button, showTooltip, hideTooltip);
+    runAutoShowTooltip(document.getElementById('infoBtn'), window._showTooltip, window._hideTooltip);
     history.pushState({ popup: 'checkout' }, '', location.href);
     isSingleBuy = true;
   });
@@ -963,7 +963,7 @@ document.querySelector('.summary > div:nth-child(1)').addEventListener('click', 
   if (isSingleBuy) !isSingleBuy;
 });
 
-(function() {
+//(function() {
   const infoBtn = document.getElementById('infoBtn');
   const clickOwner = document.querySelector('.summary > div:nth-child(2)');
   let popup = null;
@@ -1098,41 +1098,77 @@ document.querySelector('.summary > div:nth-child(1)').addEventListener('click', 
     }
     openPopupNear(infoBtn);
   });
-  
-})();
 
+function repositionPopupIfOpen() {
+  if (!popup) return;
+  const clickOwner = document.querySelector('.summary > div:nth-child(2)');
+  if (!clickOwner) return;
+  
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const target = document.getElementById('infoBtn');
+      if (!target || !popup) return;
+      
+      const rect = target.getBoundingClientRect();
+      const header = document.querySelector('.header');
+      const headerH = header ? header.offsetHeight : 0;
+      
+      const pw = popup.offsetWidth;
+      const ph = popup.offsetHeight;
+      const margin = 10;
+      
+      let top = rect.bottom + margin;
+      let left = rect.right - pw;
+      
+      const minTop = headerH + margin;
+      if (top < minTop) top = minTop;
+      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+      if (left < 8) left = 8;
+      if (top + ph > window.innerHeight - 8) top = rect.top - ph - margin;
+      if (top < minTop) top = minTop;
+      
+      popup.style.top = top + 'px';
+      popup.style.left = left + 'px';
+    });
+  });
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  
-  if (!button) return;
-  const tooltipText = "Check Delivery Details for Your Location.";
-  const wrapper = document.createElement("div");
-  wrapper.className = "tooltip-wrapper";
-  
-  if (button.parentNode) {
-    button.parentNode.insertBefore(wrapper, button);
-    wrapper.appendChild(button);
-  } else return;
-  
-  tooltip.className = "dynamic-tooltip";
-  tooltip.innerHTML = `${tooltipText} <div class="tooltip-arrow"></div>`;
-  wrapper.appendChild(tooltip);
+window.addEventListener('resize', repositionPopupIfOpen);
+window.addEventListener('orientationchange', () => {
+  setTimeout(repositionPopupIfOpen, 350);
 });
 
-const tooltip = document.createElement("div");
-const button = document.getElementById("infoBtn");
-const showTooltip = () => tooltip.classList.add("visible");
-const hideTooltip = () => tooltip.classList.remove("visible");
+  
+//})();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const button = document.getElementById("infoBtn");
+  if (!button) return;
+  
+  const tooltip = document.createElement("div");
+  tooltip.className = "dynamic-tooltip";
+  tooltip.innerHTML = `Check Delivery Details for Your Location. <div class="tooltip-arrow"></div>`;
+  
+  const wrapper = document.createElement("div");
+  wrapper.className = "tooltip-wrapper";
+  button.parentNode.insertBefore(wrapper, button);
+  wrapper.appendChild(button);
+  wrapper.appendChild(tooltip);
+  
+  window._showTooltip = () => tooltip.classList.add("visible");
+  window._hideTooltip = () => tooltip.classList.remove("visible");
+});
 
 function runAutoShowTooltip(targetButton, showFn, hideFn, delay = 1000, duration = 5000) {
   if (!targetButton || !showFn || !hideFn) return;
+  if (sessionStorage.getItem('tooltipShown')) return;
+  sessionStorage.setItem('tooltipShown', '1');
   setTimeout(() => {
     showFn();
-    setTimeout(() => {
-      hideFn();
-    }, duration);
+    setTimeout(() => hideFn(), duration);
   }, delay);
 }
+
 
 function flyToCart(triggerEl, onComplete) {
   if (triggerEl.disabled || triggerEl.classList.contains('disabled')) return;
