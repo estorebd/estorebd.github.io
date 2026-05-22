@@ -859,8 +859,7 @@ function attachToExistingButtons() {
       showToast('Stock Limit — Cannot Add More');
       return;
     }
-    flyToCart(btn);
-    addToCartFromProduct(prod);
+    flyToCart(btn, () => addToCartFromProduct(prod));
   });
 });
 $$('.buy-now').forEach(btn => {
@@ -1135,7 +1134,7 @@ function runAutoShowTooltip(targetButton, showFn, hideFn, delay = 1000, duration
   }, delay);
 }
 
-function flyToCart(triggerEl) {
+function flyToCart(triggerEl, onComplete) {
   if (triggerEl.disabled || triggerEl.classList.contains('disabled')) return;
   
   const card = triggerEl.closest('.cart');
@@ -1174,10 +1173,16 @@ function flyToCart(triggerEl) {
   
   const duration = 650; 
   const startTime = performance.now();
-  
+
+  let cartUpdated = false;
   function animate(now) {
     const elapsed = now - startTime;
     const t = Math.min(elapsed / duration, 1);
+
+    if (t >= 0.9 && !cartUpdated) {
+       cartUpdated = true;
+       if (onComplete) onComplete();
+    }
     
     const ease = t * t * t;
     
