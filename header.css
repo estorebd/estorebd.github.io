@@ -7,6 +7,7 @@ body {
   position: relative;
 }
 
+
 @keyframes scrollUp {
   from { transform: rotate(-30deg) translateY(0); }
   to   { transform: rotate(-30deg) translateY(-150px); }
