@@ -11,6 +11,38 @@
   --card: #ffffff;
 }
 
+body {
+  position: relative;
+}
+
+
+@keyframes scrollUp {
+  from { transform: rotate(-30deg) translateY(0); }
+  to   { transform: rotate(-30deg) translateY(-150px); }
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: -1;
+  background: url('/Untitled (7).png') center / 150px space;
+  opacity: 0.03;
+  animation: scrollUp 3s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+  backface-visibility: hidden;
+}
+
+@media (min-width: 650px) {
+  body::before {
+    background: none;
+    animation: none; 
+  }
+}
+
 .section {
   margin-top: 100px;
   padding: 18px;
