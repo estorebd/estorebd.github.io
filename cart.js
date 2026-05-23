@@ -627,7 +627,7 @@ $('#es-clear-cart').addEventListener('click', () => {
 
 window.addEventListener('popstate', (e) => {
   const popup = e.state?.popup;
-  
+  removePopup();
   if (popup === 'cart') {
     $('#es-cart-overlay').style.display = 'flex';
     $('#es-cart-overlay').classList.add('show');
