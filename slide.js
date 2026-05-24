@@ -8,6 +8,10 @@ window.addEventListener("load", () => {
   const nextBtn = slider.querySelector('.next');
   const dotsWrap = slider.querySelector('.slider-dots');
   
+  track.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+  track.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: false });
+  track.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
+  
   // config
   const AUTO_MS = 4000;
   const TRANS_MS = 450;
