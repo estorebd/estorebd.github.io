@@ -15,6 +15,7 @@
   z-index: 1000000;
   box-shadow: 0 2px 7px #00000077;
   background: var(--color2);
+  border-bottom: 1px solid #3E3E3E;
 }
   /*
   background: radial-gradient(circle at 0% 0%, #ff7a7a40 0%, transparent 40%),
