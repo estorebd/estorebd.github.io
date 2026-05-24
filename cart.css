@@ -28,7 +28,7 @@ body::before {
   width: 200%;
   height: 200%;
   z-index: -1;
-  background: url('/Untitled (7).png') center / 150px space;
+  background: url('IMG/Untitled (7).png') center / 150px space;
   opacity: 0.03;
   animation: scrollUp 3s linear infinite;
   will-change: transform;
