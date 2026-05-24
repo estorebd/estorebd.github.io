@@ -961,6 +961,7 @@ document.querySelector('.summary > div:nth-child(1)').addEventListener('click', 
   $('#es-cart-overlay').style.display = 'flex';
   $('#es-cart-overlay').classList.add('show');
   if (isSingleBuy) !isSingleBuy;
+  history.back();
 });
 
 //(function() {
