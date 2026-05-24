@@ -198,7 +198,7 @@ function showToast(msg = 'Done') {
     #es-toast {
       position: fixed;
       left: 50%;
-      bottom: 72px;
+      bottom: 80px;
       transform: translateX(-50%) translateY(16px);
       background: #000000cf;
       color: #fff;
