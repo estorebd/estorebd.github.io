@@ -252,7 +252,7 @@ body::before {
 .floating-cart {
   position: fixed;
   right: 18px;
-  bottom: 18px;
+  bottom: 30px;
   z-index: 1200;
   background: #111;
   color: #fff;
