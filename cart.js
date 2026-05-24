@@ -219,6 +219,7 @@ function showToast(msg = 'Done') {
       max-width: calc(100vw - 48px);
       text-overflow: ellipsis;
       overflow: hidden;
+      border-bottom: 1px solid #3E3E3E;
     }
 
     #es-toast.es-show {
