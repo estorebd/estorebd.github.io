@@ -1,67 +1,173 @@
 const hamburger = document.getElementById('hamburger');
 const navMenu = document.getElementById('nav-menu');
-const savedValue = sessionStorage.getItem('searchValueN');
 
-const overlay = document.createElement('div');
-overlay.id = 'nav-overlay';
-document.body.appendChild(overlay);
+// Overlay setup
+const overlay = document.getElementById('nav-overlay') || (() => {
+  const el = document.createElement('div');
+  el.id = 'nav-overlay';
+  document.body.appendChild(el);
+  return el;
+})();
 
-function openMenu() {
-  if (navMenu.classList.contains('active')) return;
+// ── State ──────────────────────────────────────────────
+let isOpen = false;
+let isSwiping = false;
+
+// ── Core open/close ────────────────────────────────────
+function openMenu(pushState = true) {
+  if (isOpen) return;
+  isOpen = true;
   
-  hamburger.classList.add('active');
   navMenu.classList.add('active');
+  hamburger.classList.add('active');
   overlay.classList.add('active');
+  overlay.style.display = 'block';
+  overlay.style.opacity = '0.6';
+  navMenu.style.transform = 'translateX(0)';
+  document.body.style.overflow = 'hidden';
   
-  history.pushState({ popup: 'nav-menu' }, '', location.href);
+  if (pushState) history.pushState({ popup: 'nav-menu' }, '', location.href);
 }
-
 function closeMenu(fromHistory = false) {
-  hamburger.classList.remove('active');
+  if (!isOpen) return;
+  isOpen = false;
+  
   navMenu.classList.remove('active');
+  hamburger.classList.remove('active');
   overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  navMenu.style.transform = '';
+
+  navMenu.addEventListener('transitionend', () => {
+    if (!isOpen) overlay.style.display = 'none';
+  }, { once: true });
   
   if (!fromHistory && history.state?.popup === 'nav-menu') {
     history.back();
   }
 }
 
-hamburger.addEventListener('click', () => {
-  if (navMenu.classList.contains('active')) {
-    closeMenu();
-  } else {
-    openMenu();
-  }
-});
+// ── Hamburger button ───────────────────────────────────
+hamburger.addEventListener('click', () => isOpen ? closeMenu() : openMenu());
 
 hamburger.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
-    if (navMenu.classList.contains('active')) {
-      closeMenu();
-    } else {
+    isOpen ? closeMenu() : openMenu();
+  }
+});
+
+// ── Overlay click ──────────────────────────────────────
+overlay.addEventListener('click', () => closeMenu());
+
+// ── Back button (Android) ──────────────────────────────
+window.addEventListener('popstate', (e) => {
+  if (e.state?.popup === 'nav-menu') {
+    openMenu(false);
+  } else {
+    closeMenu(true);
+  }
+});
+
+// ── ESC key ────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isOpen) closeMenu();
+});
+
+const SWIPE_THRESHOLD = 60;
+const SWIPE_VELOCITY = 0.3;
+
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+let dragging = false;
+let swipeType = null;
+let menuWidth = 0;
+
+function getMenuWidth() {
+  return navMenu.getBoundingClientRect().width || 280;
+}
+
+document.addEventListener('touchstart', (e) => {
+  const t = e.touches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+  touchStartTime = Date.now();
+  dragging = false;
+  swipeType = null;
+  menuWidth = getMenuWidth();
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  const t = e.touches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  
+  if (!dragging) {
+    if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    dragging = true;
+  }
+  
+  if (!isOpen && dx < -10) {
+    swipeType = 'open';
+    const offset = Math.min(-dx, menuWidth);
+    navMenu.style.transition = 'none';
+    navMenu.style.transform = `translateX(${Math.max(menuWidth - offset, 0)}px)`;
+    overlay.style.display = 'block';
+    overlay.style.opacity = String((offset / menuWidth) * 0.6);
+    e.preventDefault();
+    return;
+  }
+  
+  if (isOpen && dx > 10) {
+    swipeType = 'close';
+    const offset = Math.min(dx, menuWidth);
+    navMenu.style.transition = 'none';
+    navMenu.style.transform = `translateX(${offset}px)`;
+    overlay.style.opacity = String(Math.max(0.6 - (offset / menuWidth) * 0.6, 0));
+    e.preventDefault();
+    return;
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', (e) => {
+  if (!dragging || !swipeType) return;
+  
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStartX;
+  const dt = Math.max(Date.now() - touchStartTime, 1);
+  const velocity = Math.abs(dx) / dt;
+  
+  navMenu.style.transition = '';
+  
+  const farEnough = Math.abs(dx) > SWIPE_THRESHOLD;
+  const fastEnough = velocity > SWIPE_VELOCITY;
+  
+  if (swipeType === 'open') {
+    if (dx < 0 && (farEnough || fastEnough)) {
+      navMenu.style.transform = '';
       openMenu();
+    } else {
+      navMenu.style.transform = 'translateX(100%)';
+      overlay.style.opacity = '0';
+      overlay.style.display = 'none';
     }
   }
-});
-
-overlay.addEventListener('click', () => {
-  closeMenu()
-});
-
-window.addEventListener('popstate', (e) => {
-  const p = e.state?.popup || null;
   
-  if (p === 'nav-menu') {
-    hamburger.classList.add('active');
-    navMenu.classList.add('active');
-    overlay.classList.add('active');
-  } else {
-    hamburger.classList.remove('active');
-    navMenu.classList.remove('active');
-    overlay.classList.remove('active');
+  if (swipeType === 'close') {
+  if (dx > 0 && (farEnough || fastEnough)) {
+    navMenu.style.transform = '';
+    closeMenu();
+    } else {
+      navMenu.style.transform = 'translateX(0)';
+      overlay.style.opacity = '0.6';
+    }
   }
-});
+  
+  dragging = false;
+  swipeType = null;
+}, { passive: true });
 
 
 const sBar = document.querySelector('.s_bar input');
