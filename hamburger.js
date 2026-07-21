@@ -177,9 +177,8 @@ function runSearch() {
   if (!sBar.value) return;
   const sVal = sBar.value;
   const arr = sVal.trim().split(/\s+/);
-  
+
   sessionStorage.setItem("searchValueA", JSON.stringify(arr));
-  sessionStorage.setItem('searchValueN', sVal);
   sBar.value = '';
   window.location.href = '/SEARCH';
 }
@@ -187,10 +186,10 @@ function runSearch() {
 function getSearchId() {
   const url = new URL(window.location.href);
   const path = url.pathname.replace(/\/$/, '');
-  
+
   if (path.endsWith('/SEARCH')) {
     let id = url.searchParams.get('id');
-    
+
     if (id && /^\d{4}$/.test(id)) {
       id = "#" + id;
       return id;
@@ -207,10 +206,14 @@ sBar.addEventListener('keydown', (e) => {
   }
 });
 
+// ── এখানেই মূল ফিক্স: savedValue কে sessionStorage থেকে read করা ──
+const rawSaved = JSON.parse(sessionStorage.getItem("searchValueA") || "null");
+const savedValue = Array.isArray(rawSaved) ? rawSaved.join(' ') : (rawSaved || null);
+
 if (window.location.pathname.startsWith('/SEARCH')) {
   if (savedValue) {
     sBar.value = savedValue;
-    sessionStorage.setItem('searchValueN', '');
+    sessionStorage.setItem('searchValueA', '');
   }
 }
 
@@ -240,9 +243,10 @@ document.querySelectorAll('.link').forEach((e, n) => {
   e.href = links[n];
 });
 
+// ── id প্যারামিটার থেকে সিঙ্গেল প্রোডাক্ট সার্চ (?id=3833) ──
 const val = getSearchId();
 
 if (val && !savedValue) {
-  sBar.value = '';
-  sessionStorage.setItem("searchValueA", JSON.stringify(val));
+  sBar.value = val;
+  sessionStorage.setItem("searchValueA", JSON.stringify([val]));
 }
