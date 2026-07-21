@@ -206,14 +206,25 @@ sBar.addEventListener('keydown', (e) => {
   }
 });
 
-// ── এখানেই মূল ফিক্স: savedValue কে sessionStorage থেকে read করা ──
+// ── দুটো আলাদা sessionStorage key ──────────────────────
+// searchValueA  → সার্চ ইনপুট থেকে করা সার্চের ভ্যালু
+// searchValueId → লিংক থেকে আসা প্রোডাক্ট কোড (?id=XXXX)
+
 const rawSaved = JSON.parse(sessionStorage.getItem("searchValueA") || "null");
 const savedValue = Array.isArray(rawSaved) ? rawSaved.join(' ') : (rawSaved || null);
 
+const savedIdValue = sessionStorage.getItem("searchValueId") || null;
+
 if (window.location.pathname.startsWith('/SEARCH')) {
   if (savedValue) {
+    // কেস ১: সার্চ ইনপুট থেকে করা সার্চ — ইনপুটে ভ্যালু বসবে
     sBar.value = savedValue;
     sessionStorage.setItem('searchValueA', '');
+  } else if (savedIdValue) {
+    // কেস ২: লিংক থেকে আসা id — ইনপুটে ভ্যালু বসবে না,
+    // শুধু renderProducts-এর জন্য searchValueA আকারে সেট থাকবে
+    sessionStorage.setItem("searchValueA", JSON.stringify([savedIdValue]));
+    sessionStorage.setItem("searchValueId", '');
   }
 }
 
@@ -243,10 +254,11 @@ document.querySelectorAll('.link').forEach((e, n) => {
   e.href = links[n];
 });
 
-// ── id প্যারামিটার থেকে সিঙ্গেল প্রোডাক্ট সার্চ (?id=3833) ──
+// ── URL এ ?id=XXXX থাকলে সেটাকে আলাদা key-তে সেভ করা ──
+// (ইনপুট বক্সে বসবে না, শুধু প্রোডাক্ট ম্যাচ করার জন্য ব্যবহৃত হবে)
 const val = getSearchId();
 
-if (val && !savedValue) {
-  sBar.value = val;
+if (val && !savedValue && !savedIdValue) {
+  sessionStorage.setItem("searchValueId", val);
   sessionStorage.setItem("searchValueA", JSON.stringify([val]));
 }
